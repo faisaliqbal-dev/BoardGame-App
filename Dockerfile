@@ -1,11 +1,9 @@
 FROM openjdk:17-alpine
         
-EXPOSE 8080
+WORKDIR usr/src/app
  
-ENV APP_HOME /usr/src/app
+COPY target/*.jar usr/src/app.jar
 
-COPY target/*.jar $APP_HOME/app.jar
-
-WORKDIR $APP_HOME
+EXPOSE 8080
 
 CMD ["java", "-jar", "app.jar"]

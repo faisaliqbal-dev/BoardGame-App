@@ -28,6 +28,7 @@ pipeline {
                 sh "mvn test"
             }
         }
+<<<<<<< HEAD
        stage('file system scan') {
     steps {
         sh "trivy fs /root/.jenkins/workspace/CI-Pipeline --format table -o trivy-fs-report.html"
@@ -47,6 +48,29 @@ pipeline {
             }
         }
          stage('Quality Gate') {
+=======
+
+        stage('File System Scan') {
+            steps {
+                sh "trivy fs /root/.jenkins/workspace/CI-Pipeline --format table -o trivy-fs-report.html"
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('sonar') {
+                    sh '''
+                        ${SCANNER_HOME}/bin/sonar-scanner \
+                        -Dsonar.projectKey=BoardGame-App \
+                        -Dsonar.projectName=BoardGame-App \
+                        -Dsonar.java.binaries=target/classes
+                    '''
+                }
+            }
+        }
+
+        stage('Quality Gate') {
+>>>>>>> d1c37a3c79b168141573d84e9286de345da5647e
             steps {
                 script {
                     waitForQualityGate abortPipeline: false, credentialsId: 'sonar-token'
@@ -59,6 +83,7 @@ pipeline {
                 sh "mvn package"
             }
         }
+<<<<<<< HEAD
 // stage('Deploy to Nexus') {
 //             steps {
 //                withMaven(globalMavenSettingsConfig: '', jdk: 'jdk17', maven: 'maven', mavenSettingsConfig: '', traceability: true) {
@@ -94,6 +119,30 @@ pipeline {
             }
         }
           stage('Deploy To Kubernetes') {
+=======
+
+        stage('Build and Tag Image') {
+            steps {
+                script {
+                    withDockerRegistry(credentialsId: '45af7edb-59eb-4ee2-91e2-a018481890da', toolName: 'docker') {
+                        sh "docker build -t mohammedfaisaliqbal/boardgame:latest ."
+                    }
+                }
+            }
+        }
+
+        stage('Push to Dockerhub') {
+            steps {
+                script {
+                    withDockerRegistry(credentialsId: '45af7edb-59eb-4ee2-91e2-a018481890da', toolName: 'docker') {
+                        sh "docker push mohammedfaisaliqbal/boardgame:latest"
+                    }
+                }
+            }
+        }
+
+        stage('Deploy To Kubernetes') {
+>>>>>>> d1c37a3c79b168141573d84e9286de345da5647e
             steps {
                 withKubeCredentials(kubectlCredentials: [[
                     caCertificate: '',

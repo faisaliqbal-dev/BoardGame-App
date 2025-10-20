@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: Boardgame-Service
+spec:
+  selector:
+    app: Boardgame-Deployment
+  ports:
+  - port: 80
+    targetPort: 8080

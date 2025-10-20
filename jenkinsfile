@@ -1,0 +1,127 @@
+pipeline {
+    agent any
+
+    tools {
+        jdk "jdk17"
+        maven "maven"
+    }
+
+    environment {
+        SCANNER_HOME = tool "sonar-scanner"
+    }
+
+    stages {
+        stage('Git Checkout') {
+            steps {
+                git branch: 'main', changelog: false, poll: false, url: 'https://github.com/faisaliqbal-dev/BoardGame-App.git'
+            }
+        }
+
+        stage('Compile') {
+            steps {
+                sh "mvn compile"
+            }
+        }
+
+        stage('Test') {
+            steps {
+                sh "mvn test"
+            }
+        }
+       stage('file system scan') {
+    steps {
+        sh "trivy fs /root/.jenkins/workspace/CI-Pipeline --format table -o trivy-fs-report.html"
+        }
+    }
+
+        stage('SonarQube Analysis') {
+    steps {
+        withSonarQubeEnv('sonar') {
+            sh '''
+                ${SCANNER_HOME}/bin/sonar-scanner \
+                -Dsonar.projectKey=BoardGame-App \
+                -Dsonar.projectName=BoardGame-App \
+                -Dsonar.java.binaries=target/classes
+            '''
+                }
+            }
+        }
+         stage('Quality Gate') {
+            steps {
+                script {
+                    waitForQualityGate abortPipeline: false, credentialsId: 'sonar-token'
+                }
+            }
+        }
+
+        stage('Build Package') {
+            steps {
+                sh "mvn package"
+            }
+        }
+// stage('Deploy to Nexus') {
+//             steps {
+//                withMaven(globalMavenSettingsConfig: '', jdk: 'jdk17', maven: 'maven', mavenSettingsConfig: '', traceability: true) {
+//                      sh "mvn deploy"
+//         }
+//          }
+//        }
+
+        stage('Build and tag image') {
+            steps {
+                script {
+                    // This step should not normally be used in your script. Consult the inline help for details.
+               withDockerRegistry(credentialsId: '45af7edb-59eb-4ee2-91e2-a018481890da', toolName: 'docker') {
+           sh "docker build -t mohammedfaisaliqbal/boardgame:latest ."
+
+        }
+                }
+            }
+        }
+        stage('Docker Image Scan') {
+    steps {
+        sh "trivy fs /root/.jenkins/workspace/CI-Pipeline --format table -o trivy-fs-report.html  mohammedfaisaliqbal/Boardgame:latest "
+        }
+    }
+        stage('Push to docker') {
+            steps {
+                script {
+                    // This step should not normally be used in your script. Consult the inline help for details.
+               withDockerRegistry(credentialsId: '45af7edb-59eb-4ee2-91e2-a018481890da', toolName: 'docker') {
+           sh "docker push mohammedfaisaliqbal/Boardgame:latest ."
+        }
+                }
+            }
+        }
+          stage('Deploy To Kubernetes') {
+            steps {
+                withKubeCredentials(kubectlCredentials: [[
+                    caCertificate: '',
+                    clusterName: 'kubernetes',
+                    contextName: '',
+                    credentialsId: 'k8s-cred',
+                    namespace: 'webapps',
+                    serverUrl: 'https://172.31.41.215:6443'
+                ]]) {
+                    sh "kubectl apply -f deployment-service.yaml"
+                }
+            }
+        }
+
+        stage('Verify the Deployment') {
+            steps {
+                withKubeCredentials(kubectlCredentials: [[
+                    caCertificate: '',
+                    clusterName: 'kubernetes',
+                    contextName: '',
+                    credentialsId: 'k8s-cred',
+                    namespace: 'webapps',
+                    serverUrl: 'https://172.31.41.215:6443'
+                ]]) {
+                    sh "kubectl get pods -n webapps"
+                    sh "kubectl get svc -n webapps"
+                }
+            }
+        }
+    }
+}

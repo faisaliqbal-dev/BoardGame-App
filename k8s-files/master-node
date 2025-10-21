@@ -1,0 +1,13 @@
+Step 1: Check kubelet / API server on master
+sudo systemctl status kubelet
+sudo docker ps | grep kube-apiserver   # agar docker use kar rahe ho
+# ya agar containerd use ho raha hai:
+sudo crictl ps | grep kube-apiserver
+
+Step 2: Check kubeconfig
+ls -l /etc/kubernetes/admin.conf
+
+export KUBECONFIG=/etc/kubernetes/admin.conf
+kubectl get pods -n webapps
+
+

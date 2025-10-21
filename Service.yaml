@@ -4,7 +4,7 @@ metadata:
   name: boardgame-service
 spec:
   selector:
-    app: boardgame-deployment
+    app: boardgame
   ports:
   - port: 80
     targetPort: 8080

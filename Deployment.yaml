@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: Boardgame-Deployment
+  name: boardgame-deployment
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: Boardgame
+      app: boardgame
   template:
     metadata:
       labels:
-        app: Boardgame
+        app: boardgame
     spec:
       containers:
-       - name: Boardgame-Container
+       - name: boardgame-container
          image: mohammedfaisaliqbal/boardgame-app:latest
          ports:
           - containerPort: 8080

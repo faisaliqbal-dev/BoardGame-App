@@ -3,7 +3,6 @@
 3 server for master and slave k8s 
 1 for Jenkins in which docker should be installed and trivy also
 1 for sonarqube in which docker should be installed 
-1 for nexus in which docker should be installed 
 
 # PLUGINS 
 pipeline view
@@ -71,27 +70,34 @@ SCANNER_HOME= tool "sonar-scanner"
 10. **Deploy to Kubernetes**
 
     eks rbac 
-    in screenshot create account in namespace webapp in master node for performing deployment 
-    first file is svc.yml
-    second is role.yml in same namespace 
-    third one is bind.yml for binding role to user
-    go to browser search >  k8s additional api token 
+    in /k8s create account in namespace webapp in master node for performing deployment 
+    first file is svc.yml,
+    second is role.yml in same namespace, 
+    third one is bind.yml for binding role to user,
+    fourth is create secret file in webapps namespace,
     nano secret.yml  > service account name give as Jenkins >  run this file in -n webapps
 
+    all files are like this :
+    namespace.yaml  rolebinding.yaml  roles.yaml  secret.yaml  svc.yaml
+    
     kubectl describe mysecretname -n webapps  > a secrect token will generate
 
     this will give you a token for connecting or authenticateJenkins and k8s copy token and
-    now come to Jenkins > manage Jenkins > credentials > secret text > secret paste token > ID > k8s cred > save 
+    now come to Jenkins > manage Jenkins > credentials > secret text > secret paste token > ID > k8s cred > save,
    
-    now pipeline syntanx  withkubeconfig cli
+    now pipeline syntanx  for writing pipeline choose  withkubeconfig cli
     select credentials k8s-cred
     k8s server endpoint {
     now go to master k8s cd ~/.kube > ls > cat config > copy server end point(server > ip-add) > paste > cluster name Kubernetes > namespace > webpass
-    }
+    },
 
-    - Applies `deployment-service.yaml` to deploy app on K8s worker nodes
+    make sure that you copied server-end point, as well as clustername which is basicalli kubernetes and you have to write your namespace as well as, then copy        that syntax and paste it in pipeline. 
 
-11. **Verify Deployment**
+    - Applies `deployment.yaml` and service.yaml to deploy app on K8s worker nodes
+    - sh "kubectl apply -f deployment.yaml"
+    -  sh "kubectl apply -f service.yaml
+
+12. **Verify Deployment**
     - Lists pods and services in the `webapps` namespace
 
 ---

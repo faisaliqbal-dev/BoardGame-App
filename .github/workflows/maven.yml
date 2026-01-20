@@ -41,7 +41,7 @@ jobs:
       run: |
             trivy -fs . --format table -o trivy-file-scan.txt
     - name: Upload Artifacts
-      uses: actions/uploads-artifacts@v4
+      uses: actions/upload-artifact@v4
       with:
        name: Trivy-Scan-Report
        path: artifacts/trivy-file-scan.txt

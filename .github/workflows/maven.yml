@@ -33,6 +33,7 @@ jobs:
       needs: checkout
        
       steps:
+          - uses: actions/setup-java@v4
           - name: Build with Maven
             run: mvn -B package --file pom.xml
 

@@ -45,7 +45,7 @@ jobs:
                    sudo apt-get install trivy
           - name: Scan With Trivy
             run: |
-      
+                  pwd
                   trivy fs . --format table -o trivy-file-scan.txt
 
   upload-artifacts:

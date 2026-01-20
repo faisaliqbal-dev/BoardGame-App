@@ -45,8 +45,8 @@ jobs:
                    sudo apt-get install trivy
           - name: Scan With Trivy
             run: |
-                  mkdir -p artifacts
-                  trivy fs . --format table -o artifacts/trivy-file-scan.txt
+      
+                  trivy fs . --format table -o trivy-file-scan.txt
 
   upload-artifacts:
      runs-on: ubuntu-latest
@@ -57,5 +57,5 @@ jobs:
             uses: actions/upload-artifact@v4
             with:
              name: Trivy-Scan-Report
-             path: artifacts/trivy-file-scan.txt
+             path: trivy-file-scan.txt
        
